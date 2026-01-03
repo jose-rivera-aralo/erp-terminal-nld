@@ -1,23 +1,37 @@
-import { redirect } from 'next/navigation'
-import { createSupabaseServerClient } from '@/lib/supabaseServer'
+'use client'
 
-export default async function InicioPage() {
-  const supabase = createSupabaseServerClient()
+import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { supabase } from '@/lib/supabaseClient'
 
-  const {
-    data: { session },
-  } = await supabase.auth.getSession()
+export default function InicioPage() {
+  const router = useRouter()
+  const [email, setEmail] = useState<string | null>(null)
 
-  if (!session) {
-    redirect('/login')
+  useEffect(() => {
+    const validarSesion = async () => {
+      const { data } = await supabase.auth.getSession()
+      const session = data.session
+
+      if (!session) {
+        router.replace('/login')
+        return
+      }
+
+      setEmail(session.user.email ?? null)
+    }
+
+    validarSesion()
+  }, [router])
+
+  if (!email) {
+    return <p>Cargando…</p>
   }
 
   return (
     <main style={{ padding: 40 }}>
       <h1>Inicio</h1>
-      <p>Bienvenido {session.user.email}</p>
+      <p>Bienvenido {email}</p>
     </main>
   )
 }
-
-

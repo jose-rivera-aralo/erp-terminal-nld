@@ -54,7 +54,7 @@ export default function LoginPage() {
       >
         <h2 style={{ marginBottom: 8 }}>Inicia sesión</h2>
         <p style={{ marginBottom: 24, color: '#555' }}>
-          Accede con tus credenciales
+          Accede con tus credenciales ARALO EXPRESS
         </p>
 
         <label>Correo</label>

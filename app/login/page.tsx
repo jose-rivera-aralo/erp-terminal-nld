@@ -38,7 +38,7 @@ export default function LoginPage() {
     } catch (err) {
       setError('Error inesperado al iniciar sesión')
     } finally {
-      setLoading(false)
+        setLoading(false)
     }
   }
 
@@ -64,7 +64,7 @@ export default function LoginPage() {
       >
         <h2 style={{ marginBottom: 8 }}>Inicia sesión</h2>
         <p style={{ marginBottom: 24, color: '#666' }}>
-          Accede con tus credenciales corporativas
+          Accede con tus credenciales
         </p>
 
         <label style={{ fontSize: 14 }}>Correo</label>

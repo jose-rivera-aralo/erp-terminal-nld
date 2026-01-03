@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { supabaseBrowser } from '@/lib/supabaseBrowser'
+import { supabase } from '@/lib/supabaseClient'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -17,7 +17,7 @@ export default function LoginPage() {
     setLoading(true)
     setError(null)
 
-    const { data, error } = await supabaseBrowser.auth.signInWithPassword({
+    const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
     })
@@ -28,52 +28,31 @@ export default function LoginPage() {
       return
     }
 
-    // 🔑 ESPERAMOS a que Supabase escriba la sesión
-    await new Promise((r) => setTimeout(r, 300))
-
-    // 🔁 FORZAMOS navegación
-    router.replace('/inicio')
+    // 🔴 CLAVE: navegación inmediata
+    router.push('/inicio')
   }
 
   return (
-    <main
-      style={{
-        minHeight: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-      }}
-    >
-      <form
-        onSubmit={handleLogin}
-        style={{
-          width: 360,
-          padding: 24,
-          borderRadius: 8,
-          background: '#fff',
-          boxShadow: '0 10px 30px rgba(0,0,0,.1)',
-        }}
-      >
+    <main style={{ minHeight: '100vh', display: 'grid', placeItems: 'center' }}>
+      <form onSubmit={handleLogin} style={{ width: 360 }}>
         <h2>Inicia sesión</h2>
 
-        <label>Correo</label>
         <input
+          placeholder="Correo"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          required
         />
 
-        <label>Contraseña</label>
         <input
           type="password"
+          placeholder="Contraseña"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          required
         />
 
         {error && <p style={{ color: 'red' }}>{error}</p>}
 
-        <button type="submit" disabled={loading}>
+        <button disabled={loading}>
           {loading ? 'Ingresando…' : 'Ingresar'}
         </button>
       </form>

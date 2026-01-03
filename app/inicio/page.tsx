@@ -15,8 +15,9 @@ export default async function InicioPage() {
   return (
     <main style={{ padding: 40 }}>
       <h1>Inicio</h1>
-      <p>Bienvenido a {session.user.email}</p>
+      <p>Bienvenido {session.user.email}</p>
     </main>
   )
 }
+
 

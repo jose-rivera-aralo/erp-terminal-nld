@@ -2,12 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@supabase/supabase-js'
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
+import { supabase } from '@/lib/supabaseClient'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -22,24 +17,19 @@ export default function LoginPage() {
     setLoading(true)
     setError(null)
 
-    try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      })
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    })
 
-      if (error) {
-        setError(error.message)
-        return
-      }
-
-      // 🔴 CLAVE: redirección correcta después de login
-      router.replace('/inicio')
-    } catch (err) {
-      setError('Error inesperado al iniciar sesión')
-    } finally {
-        setLoading(false)
+    if (error) {
+      setError(error.message)
+      setLoading(false)
+      return
     }
+
+    router.push('/inicio')
+    router.refresh()
   }
 
   return (
@@ -56,51 +46,37 @@ export default function LoginPage() {
         onSubmit={handleLogin}
         style={{
           width: 380,
-          background: '#ffffff',
           padding: 32,
+          background: '#fff',
           borderRadius: 12,
-          boxShadow: '0 20px 40px rgba(0,0,0,0.1)',
+          boxShadow: '0 10px 30px rgba(0,0,0,0.1)',
         }}
       >
         <h2 style={{ marginBottom: 8 }}>Inicia sesión</h2>
-        <p style={{ marginBottom: 24, color: '#666' }}>
+        <p style={{ marginBottom: 24, color: '#555' }}>
           Accede con tus credenciales
         </p>
 
-        <label style={{ fontSize: 14 }}>Correo</label>
+        <label>Correo</label>
         <input
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
-          style={{
-            width: '100%',
-            padding: 10,
-            marginBottom: 16,
-            borderRadius: 6,
-            border: '1px solid #ccc',
-          }}
+          style={{ width: '100%', marginBottom: 16, padding: 10 }}
         />
 
-        <label style={{ fontSize: 14 }}>Contraseña</label>
+        <label>Contraseña</label>
         <input
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
-          style={{
-            width: '100%',
-            padding: 10,
-            marginBottom: 20,
-            borderRadius: 6,
-            border: '1px solid #ccc',
-          }}
+          style={{ width: '100%', marginBottom: 24, padding: 10 }}
         />
 
         {error && (
-          <p style={{ color: 'red', marginBottom: 12, fontSize: 14 }}>
-            {error}
-          </p>
+          <p style={{ color: 'red', marginBottom: 16 }}>{error}</p>
         )}
 
         <button
@@ -109,15 +85,14 @@ export default function LoginPage() {
           style={{
             width: '100%',
             padding: 12,
-            borderRadius: 8,
-            border: 'none',
-            background: loading ? '#ff9c7a' : '#ff4d1c',
+            background: '#ff4d12',
             color: '#fff',
-            fontWeight: 600,
-            cursor: loading ? 'not-allowed' : 'pointer',
+            border: 'none',
+            borderRadius: 8,
+            cursor: 'pointer',
           }}
         >
-          {loading ? 'Ingresando...' : 'Ingresar'}
+          {loading ? 'Ingresando…' : 'Ingresar'}
         </button>
       </form>
     </div>

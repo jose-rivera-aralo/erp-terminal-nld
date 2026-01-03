@@ -2,11 +2,15 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { supabase } from '@/lib/supabaseClient'
+import { createClient } from '@supabase/supabase-js'
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+)
 
 export default function LoginPage() {
   const router = useRouter()
-
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
@@ -17,95 +21,45 @@ export default function LoginPage() {
     setLoading(true)
     setError(null)
 
-    try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      })
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    })
 
-      if (error) {
-        setError(error.message)
-        return
-      }
-
-      if (!data.session) {
-        setError('No se pudo crear la sesión')
-        return
-      }
-
-      // 🔁 Redirección limpia
-      router.push('/inicio')
-      router.refresh()
-    } catch (err) {
-      setError('Error inesperado al iniciar sesión')
-    } finally {
+    if (error) {
+      setError(error.message)
       setLoading(false)
+      return
     }
+
+    router.push('/inicio')
+    router.refresh()
   }
 
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        background: '#f5f6f8',
-      }}
-    >
-      <form
-        onSubmit={handleLogin}
-        style={{
-          width: 380,
-          padding: 32,
-          background: '#fff',
-          borderRadius: 12,
-          boxShadow: '0 10px 30px rgba(0,0,0,0.1)',
-        }}
-      >
-        <h2 style={{ marginBottom: 8 }}>Inicia sesión</h2>
-        <p style={{ marginBottom: 24, color: '#555' }}>
-          Accede con tus credenciales
-        </p>
+    <form onSubmit={handleLogin} style={{ maxWidth: 400, margin: '100px auto' }}>
+      <h2>Inicia sesión</h2>
 
-        <label>Correo</label>
-        <input
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-          style={{ width: '100%', marginBottom: 16, padding: 10 }}
-        />
+      <input
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        placeholder="Correo"
+        required
+      />
 
-        <label>Contraseña</label>
-        <input
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          style={{ width: '100%', marginBottom: 24, padding: 10 }}
-        />
+      <input
+        type="password"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        placeholder="Contraseña"
+        required
+      />
 
-        {error && (
-          <p style={{ color: 'red', marginBottom: 16 }}>{error}</p>
-        )}
+      {error && <p style={{ color: 'red' }}>{error}</p>}
 
-        <button
-          type="submit"
-          disabled={loading}
-          style={{
-            width: '100%',
-            padding: 12,
-            background: '#ff4d12',
-            color: '#fff',
-            border: 'none',
-            borderRadius: 8,
-            cursor: 'pointer',
-          }}
-        >
-          {loading ? 'Ingresando…' : 'Ingresar'}
-        </button>
-      </form>
-    </div>
+      <button type="submit" disabled={loading}>
+        {loading ? 'Ingresando...' : 'Ingresar'}
+      </button>
+    </form>
   )
 }

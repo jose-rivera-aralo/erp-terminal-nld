@@ -1,8 +1,8 @@
 import { redirect } from 'next/navigation'
-import { createSupabaseServer } from '@/lib/supabaseServer'
+import { createSupabaseServerClient } from '@/lib/supabaseServer'
 
 export default async function InicioPage() {
-  const supabase = createSupabaseServer()
+  const supabase = createSupabaseServerClient()
 
   const {
     data: { session },
@@ -15,7 +15,8 @@ export default async function InicioPage() {
   return (
     <main style={{ padding: 40 }}>
       <h1>Inicio</h1>
-      <p>Bienvenido {session.user.email}</p>
+      <p>Bienvenido a {session.user.email}</p>
     </main>
   )
 }
+

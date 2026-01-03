@@ -17,19 +17,30 @@ export default function LoginPage() {
     setLoading(true)
     setError(null)
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    })
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
 
-    if (error) {
-      setError(error.message)
+      if (error) {
+        setError(error.message)
+        return
+      }
+
+      if (!data.session) {
+        setError('No se pudo crear la sesión')
+        return
+      }
+
+      // 🔁 Redirección limpia
+      router.push('/inicio')
+      router.refresh()
+    } catch (err) {
+      setError('Error inesperado al iniciar sesión')
+    } finally {
       setLoading(false)
-      return
     }
-
-    router.push('/inicio')
-    router.refresh()
   }
 
   return (

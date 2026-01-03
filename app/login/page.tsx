@@ -2,94 +2,124 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { supabase } from '@/lib/supabaseClient'
+import { createClient } from '@supabase/supabase-js'
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+)
 
 export default function LoginPage() {
   const router = useRouter()
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  const handleLogin = async () => {
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault()
     setLoading(true)
     setError(null)
 
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    })
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
 
-    if (error) {
-      setError('Correo o contraseña incorrectos')
+      if (error) {
+        setError(error.message)
+        return
+      }
+
+      // 🔴 CLAVE: redirección correcta después de login
+      router.replace('/inicio')
+    } catch (err) {
+      setError('Error inesperado al iniciar sesión')
+    } finally {
       setLoading(false)
-      return
     }
-
-    // ✅ LOGIN EXITOSO → REDIRECCIÓN
-    router.push('/dashboard')
   }
 
   return (
-    <main className="login-layout">
-      {/* PANEL IZQUIERDO */}
-      <section className="login-brand">
-        <div className="brand-header">
-          <div className="brand-logo">GA</div>
-          <div>
-            <p className="brand-group">GRUPO ARALO</p>
-            <p className="brand-area">Aralo Express · Terminal NLD</p>
-          </div>
-        </div>
-
-        <h1>Portal de Gestión Operativa</h1>
-        <p className="brand-description">
-          Administración de procesos operativos y de calidad
-          dentro de la terminal de Nuevo Laredo.
+    <div
+      style={{
+        minHeight: '100vh',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        background: '#f5f6f8',
+      }}
+    >
+      <form
+        onSubmit={handleLogin}
+        style={{
+          width: 380,
+          background: '#ffffff',
+          padding: 32,
+          borderRadius: 12,
+          boxShadow: '0 20px 40px rgba(0,0,0,0.1)',
+        }}
+      >
+        <h2 style={{ marginBottom: 8 }}>Inicia sesión</h2>
+        <p style={{ marginBottom: 24, color: '#666' }}>
+          Accede con tus credenciales corporativas
         </p>
 
-        <div className="brand-card">
-          <h4>Alcance del sistema</h4>
-          <ul>
-            <li>✔ Control de procesos operativos</li>
-            <li>✔ Seguimiento a desviaciones</li>
-            <li>✔ Gestión bajo estándares Aralo Express</li>
-          </ul>
-        </div>
-      </section>
+        <label style={{ fontSize: 14 }}>Correo</label>
+        <input
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+          style={{
+            width: '100%',
+            padding: 10,
+            marginBottom: 16,
+            borderRadius: 6,
+            border: '1px solid #ccc',
+          }}
+        />
 
-      {/* FORMULARIO */}
-      <section className="login-form">
-        <div className="form-card">
-          <h2>Inicia sesión</h2>
-          <p className="form-subtitle">
-            Accede con tus credenciales corporativas
+        <label style={{ fontSize: 14 }}>Contraseña</label>
+        <input
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+          style={{
+            width: '100%',
+            padding: 10,
+            marginBottom: 20,
+            borderRadius: 6,
+            border: '1px solid #ccc',
+          }}
+        />
+
+        {error && (
+          <p style={{ color: 'red', marginBottom: 12, fontSize: 14 }}>
+            {error}
           </p>
+        )}
 
-          <label>Correo</label>
-          <input
-            type="email"
-            placeholder="usuario@aralo.com.mx"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-
-          <label>Contraseña</label>
-          <input
-            type="password"
-            placeholder="••••••••"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-
-          <button onClick={handleLogin} disabled={loading}>
-            {loading ? 'Ingresando…' : 'INGRESAR'}
-          </button>
-
-          {error && <p className="form-error">{error}</p>}
-        </div>
-      </section>
-    </main>
+        <button
+          type="submit"
+          disabled={loading}
+          style={{
+            width: '100%',
+            padding: 12,
+            borderRadius: 8,
+            border: 'none',
+            background: loading ? '#ff9c7a' : '#ff4d1c',
+            color: '#fff',
+            fontWeight: 600,
+            cursor: loading ? 'not-allowed' : 'pointer',
+          }}
+        >
+          {loading ? 'Ingresando...' : 'Ingresar'}
+        </button>
+      </form>
+    </div>
   )
 }
